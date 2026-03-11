@@ -21,7 +21,7 @@ export const categoriesApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: (headers, { getState }) => {
-      headers.set("ngrok-skip-browser-warning", "true")
+
       const token = (getState() as RootState).auth.token;
       if (token) {
         headers.set('authorization', token);

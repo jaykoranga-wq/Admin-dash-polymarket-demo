@@ -14,7 +14,7 @@ export const authApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: (headers, { getState }) => {
-       headers.set("ngrok-skip-browser-warning", "true")
+       
       const token = (getState() as RootState).auth.token;
       if (token) {
         // API expects raw token in 'authorization' header (no 'Bearer' prefix)
