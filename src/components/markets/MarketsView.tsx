@@ -7,8 +7,8 @@ import { MarketForm } from './MarketForm';
 
 const STATUS_FILTER_OPTIONS = [
   { value: 'all', label: 'All Status' },
-  { value: '1', label: 'Active' },
-  { value: '2', label: 'Pending' },
+  { value: '1', label: 'Pending' },
+  { value: '2', label: 'Active' },
   { value: '3', label: 'Resolved' },
   { value: '4', label: 'Closed' },
 ];
