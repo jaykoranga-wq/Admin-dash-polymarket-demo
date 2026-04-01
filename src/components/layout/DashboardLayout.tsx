@@ -19,6 +19,7 @@ interface DashboardLayoutProps {
   children: ReactNode;
   currentView: string;
   onViewChange: (view: string) => void;
+  pageTitle?: string;
 }
 
 const navigation = [
@@ -29,7 +30,7 @@ const navigation = [
   { id: 'analytics', name: 'Analytics', icon: BarChart3 },
 ];
 
-export function DashboardLayout({ children, currentView, onViewChange }: DashboardLayoutProps) {
+export function DashboardLayout({ children, currentView, onViewChange, pageTitle }: DashboardLayoutProps) {
   const adminUser = useSelector((state: RootState) => state.auth.adminUser);
   const dispatch = useDispatch();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -125,7 +126,7 @@ export function DashboardLayout({ children, currentView, onViewChange }: Dashboa
               <Menu className="w-6 h-6" />
             </button>
             <h2 className="text-xl font-bold text-gray-900 capitalize">
-              {navigation.find((item) => item.id === currentView)?.name || 'Dashboard'}
+              {pageTitle || navigation.find((item) => item.id === currentView)?.name || 'Dashboard'}
             </h2>
             <div className="w-10 lg:w-0" />
           </div>

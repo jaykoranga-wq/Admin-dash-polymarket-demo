@@ -1,7 +1,7 @@
 // ─── Marketplace ───────────────────────────────────────────────────────────
 
 /** status codes returned by the API */
-export type MarketStatus = 1 | 2 | 3 | 4;
+export type MarketStatus = 1 | 2 | 3 | 4 | 5;
 
 export interface MarketCategory {
   id: string;
@@ -37,6 +37,21 @@ export interface MarketOptionGroup {
 export interface MarketDetail extends Market {
   description: string;
   optionGroups: MarketOptionGroup[];
+}
+
+export type MarketAnswer = 0 | 1;
+
+export interface ProposeResponseRequest {
+  marketId: string;
+  answer: MarketAnswer;
+}
+
+export interface ProposeResponseData {
+  marketId?: string;
+  answer?: MarketAnswer;
+  status?: MarketStatus;
+  resolvedAt?: string;
+  [key: string]: unknown;
 }
 
 /** Body for POST /v1/marketplace */

@@ -6,6 +6,8 @@ import type {
   MarketDetail,
   MarketCreateRequest,
   MarketListParams,
+  ProposeResponseData,
+  ProposeResponseRequest,
 } from '../types/market.types';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
@@ -44,7 +46,13 @@ export const marketplaceApi = createApi({
           ...(params.page !== undefined && { page: params.page }),
         },
       }),
-      providesTags: ['Market'],
+      providesTags: (result) => [
+        { type: 'Market', id: 'LIST' },
+        ...(result?.data?.data?.map((market) => ({
+          type: 'Market' as const,
+          id: market.id,
+        })) ?? []),
+      ],
     }),
 
     /** GET /v1/admin/marketplace/fetchSpecific?marketId=... */
@@ -65,6 +73,19 @@ export const marketplaceApi = createApi({
       }),
       invalidatesTags: ['Market'],
     }),
+
+    /** POST /v1/admin/marketplace/propose-response */
+    proposeResponse: builder.mutation<ApiResponse<ProposeResponseData>, ProposeResponseRequest>({
+      query: (body) => ({
+        url: '/v1/admin/marketplace/propose-response',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _error, body) => [
+        { type: 'Market', id: body.marketId },
+        { type: 'Market', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -72,4 +93,5 @@ export const {
   useGetMarketsQuery,
   useGetMarketByIdQuery,
   useCreateMarketMutation,
+  useProposeResponseMutation,
 } = marketplaceApi;

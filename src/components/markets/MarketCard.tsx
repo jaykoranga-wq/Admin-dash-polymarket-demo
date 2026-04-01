@@ -1,26 +1,21 @@
 import { TrendingUp, Calendar, Tag } from 'lucide-react';
 import type { Market } from '../../types/market.types';
+import { getMarketStatusMeta } from './marketStatus';
 
 interface MarketCardProps {
   market: Market;
   onView: (market: Market) => void;
 }
 
-const statusLabels: Record<number, { label: string; className: string }> = {
-  2: { label: 'Active',   className: 'bg-green-100 text-green-700' },
-  1: { label: 'Pending',  className: 'bg-yellow-100 text-yellow-700' },
-  3: { label: 'Resolved', className: 'bg-purple-100 text-purple-700' },
-  4: { label: 'Closed',   className: 'bg-gray-100 text-gray-700' },
-};
-
 export function MarketCard({ market, onView }: MarketCardProps) {
-  const status = statusLabels[market.status] ?? { label: String(market.status), className: 'bg-gray-100 text-gray-700' };
+  const status = getMarketStatusMeta(market.status);
   const resolutionDate = new Date(market.resolutionTime);
   const isExpired = resolutionDate < new Date();
 
   return (
-    <div
-      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+    <button
+      type="button"
+      className="w-full cursor-pointer rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-shadow hover:shadow-md"
       onClick={() => onView(market)}
     >
       <div className="flex items-start gap-4">
@@ -61,6 +56,6 @@ export function MarketCard({ market, onView }: MarketCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

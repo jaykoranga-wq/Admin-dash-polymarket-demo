@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Search, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useGetMarketsQuery } from '../../services/marketplaceApi';
 import type { Market } from '../../types/market.types';
 import { MarketCard } from './MarketCard';
@@ -14,6 +15,7 @@ const STATUS_FILTER_OPTIONS = [
 ];
 
 export function MarketsView() {
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -32,8 +34,7 @@ export function MarketsView() {
   });
 
   const handleView = (market: Market) => {
-    // TODO: open a detail drawer/modal using useGetMarketByIdQuery
-    console.log('view market', market.id);
+    navigate(`/market/${market.id}`);
   };
 
   return (

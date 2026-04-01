@@ -1,52 +1,82 @@
 import { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from './store';
-import { setAdminProfile, clearCredentials } from './store/authSlice';
-import { useGetProfileQuery } from './services/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
+import { AnalyticsView } from './components/analytics/AnalyticsView';
 import { LoginForm } from './components/auth/LoginForm';
 import { SignupForm } from './components/auth/SignupForm';
-import { DashboardLayout } from './components/layout/DashboardLayout';
-import { DashboardView } from './components/dashboard/DashboardView';
 import { CategoriesView } from './components/categories/CategoriesView';
+import { DashboardView } from './components/dashboard/DashboardView';
+import { DashboardLayout } from './components/layout/DashboardLayout';
+import { MarketDetailsPage } from './components/markets/MarketDetailsPage';
 import { MarketsView } from './components/markets/MarketsView';
 import { ResolutionsView } from './components/resolutions/ResolutionsView';
-import { AnalyticsView } from './components/analytics/AnalyticsView';
+import { useGetProfileQuery } from './services/authApi';
+import { clearCredentials, setAdminProfile } from './store/authSlice';
+import type { RootState } from './store';
 
 type AuthScreen = 'login' | 'signup';
 
-/** Inner component rendered only when authenticated — fetches profile on mount */
+const routeByView: Record<string, string> = {
+  dashboard: '/',
+  categories: '/categories',
+  markets: '/markets',
+  resolutions: '/resolutions',
+  analytics: '/analytics',
+};
+
+function AuthenticatedLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isMarketDetailsPage = location.pathname.startsWith('/market/');
+  const currentView = isMarketDetailsPage
+    ? 'markets'
+    : Object.entries(routeByView).find(([, path]) => path === location.pathname)?.[0] ?? 'dashboard';
+
+  return (
+    <DashboardLayout
+      currentView={currentView}
+      pageTitle={isMarketDetailsPage ? 'Market Details' : undefined}
+      onViewChange={(view) => navigate(routeByView[view] ?? '/')}
+    >
+      <Outlet />
+    </DashboardLayout>
+  );
+}
+
 function AuthenticatedApp() {
   const dispatch = useDispatch();
-  const [currentView, setCurrentView] = useState('dashboard');
-
-  // Fetch admin profile whenever we have a token (also re-hydrates after page refresh)
   const { data: profileData, error: profileError } = useGetProfileQuery();
 
   useEffect(() => {
     if (profileData) {
       dispatch(setAdminProfile(profileData));
     }
-    // If profile fetch fails (e.g. expired token), clear session
+
     if (profileError) {
       dispatch(clearCredentials());
     }
-  }, [profileData, profileError, dispatch]);
-
-  const renderView = () => {
-    switch (currentView) {
-      case 'dashboard':   return <DashboardView />;
-      case 'categories':  return <CategoriesView />;
-      case 'markets':     return <MarketsView />;
-      case 'resolutions': return <ResolutionsView />;
-      case 'analytics':   return <AnalyticsView />;
-      default:            return <DashboardView />;
-    }
-  };
+  }, [dispatch, profileData, profileError]);
 
   return (
-    <DashboardLayout currentView={currentView} onViewChange={setCurrentView}>
-      {renderView()}
-    </DashboardLayout>
+    <Routes>
+      <Route element={<AuthenticatedLayout />}>
+        <Route path="/" element={<DashboardView />} />
+        <Route path="/categories" element={<CategoriesView />} />
+        <Route path="/markets" element={<MarketsView />} />
+        <Route path="/market/:marketId" element={<MarketDetailsPage />} />
+        <Route path="/resolutions" element={<ResolutionsView />} />
+        <Route path="/analytics" element={<AnalyticsView />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
@@ -58,6 +88,7 @@ function App() {
     if (authScreen === 'signup') {
       return <SignupForm onSwitchToLogin={() => setAuthScreen('login')} />;
     }
+
     return <LoginForm onSwitchToSignup={() => setAuthScreen('signup')} />;
   }
 
