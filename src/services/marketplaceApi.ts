@@ -10,6 +10,26 @@ import type {
   ProposeResponseRequest,
 } from '../types/market.types';
 
+/** Mirrors the backend RESOLUTION_ACTION enum */
+export const RESOLUTION_ACTION = {
+  PROPOSE: 1,
+  DISPUTE: 2,
+  DISPUTE_SETTLEMENT: 3,
+  SETTLE: 4,
+} as const;
+export type ResolutionAction = typeof RESOLUTION_ACTION[keyof typeof RESOLUTION_ACTION];
+
+export interface OracleTimelineEntry {
+  id: string;
+  action: ResolutionAction;
+  status: number;
+  bondAmount: string | null;
+  response: number | null;
+  createdAt: string;
+  proposerAddress: string | null;
+  disputerAddress: string | null;
+}
+
 const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
 
 interface MarketListData {
@@ -84,6 +104,18 @@ export const marketplaceApi = createApi({
       invalidatesTags: (_result, _error, body) => [
         { type: 'Market', id: body.marketId },
         { type: 'Market', id: 'LIST' },
+        { type: 'Market' as const, id: `timeline-${body.marketId}` },
+      ],
+    }),
+
+    /** GET /v1/admin/marketplace/oracle-timeline?marketId=... */
+    getOracleTimeline: builder.query<{ data: OracleTimelineEntry[] }, string>({
+      query: (marketId) => ({
+        url: '/v1/admin/marketplace/oracle-timeline',
+        params: { marketId },
+      }),
+      providesTags: (_result, _error, marketId) => [
+        { type: 'Market' as const, id: `timeline-${marketId}` },
       ],
     }),
   }),
@@ -94,4 +126,6 @@ export const {
   useGetMarketByIdQuery,
   useCreateMarketMutation,
   useProposeResponseMutation,
+  useGetOracleTimelineQuery,
 } = marketplaceApi;
+

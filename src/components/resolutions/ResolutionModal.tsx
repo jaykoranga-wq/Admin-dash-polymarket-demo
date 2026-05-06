@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { X, CheckCircle } from 'lucide-react';
-import type { MarketDetail, MarketToken } from '../../types/market.types';
+import type { MarketAnswer, MarketDetail, MarketToken } from '../../types/market.types';
+import { useProposeResponseMutation } from '../../services/marketplaceApi';
+import { useToast } from '../ui/ToastProvider';
 
 interface ResolutionModalProps {
   market: MarketDetail;
@@ -9,19 +11,41 @@ interface ResolutionModalProps {
 
 export function ResolutionModal({ market, onClose }: ResolutionModalProps) {
   const [selectedToken, setSelectedToken] = useState<string>('');
+  const [proposeResponse] = useProposeResponseMutation();
+  const { showSuccess, showError } = useToast();
 
   const allTokens: MarketToken[] = market.optionGroups.flatMap((g) => g.tokens);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const getAnswer = (tokenId: string): MarketAnswer => {
+    const token = allTokens.find((t) => t.id === tokenId);
+    return (token?.title?.toLowerCase() === 'yes' ? 1 : 0) as MarketAnswer;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedToken) {
       alert('Please select a winning outcome.');
       return;
     }
     if (!confirm('Resolve this market? This action cannot be undone.')) return;
-    // TODO: call resolve market API mutation when endpoint is provided
-    console.log('resolve', { marketId: market.id, tokenId: selectedToken });
-    onClose();
+
+    try {
+      await proposeResponse({ marketId: market.id, answer: getAnswer(selectedToken) }).unwrap();
+      showSuccess('Market resolved successfully');
+      onClose();
+    } catch (err) {
+      const message =
+        typeof err === 'object' &&
+        err !== null &&
+        'data' in err &&
+        typeof (err as { data: unknown }).data === 'object' &&
+        (err as { data: unknown }).data !== null &&
+        'message' in (err as { data: { message: unknown } }).data &&
+        typeof (err as { data: { message: unknown } }).data.message === 'string'
+          ? (err as { data: { message: string } }).data.message
+          : 'Failed to resolve market';
+      showError(message);
+    }
   };
 
   return (
