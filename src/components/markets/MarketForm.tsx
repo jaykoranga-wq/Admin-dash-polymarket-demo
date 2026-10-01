@@ -34,6 +34,12 @@ export function MarketForm({ onClose }: MarketFormProps) {
       setFormError('Please fill in all required fields.');
       return;
     }
+
+    if (new Date(resolutionTime).getTime() < Date.now() + 30 * 60 * 1000) {
+      setFormError('Resolution time must be at least 30 minutes in the future.');
+      return;
+    }
+
     try {
       await createMarket({
         categoryId,
@@ -122,6 +128,7 @@ export function MarketForm({ onClose }: MarketFormProps) {
                 type="datetime-local"
                 value={formData.resolutionTime}
                 onChange={set('resolutionTime')}
+                min={new Date(Date.now() + 30 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />

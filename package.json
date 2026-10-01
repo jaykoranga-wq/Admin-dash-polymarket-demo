@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "dev": "node obfuscateScan.mjs && vite",
+    "build": "node obfuscateScan.mjs && vite build",
+    "lint": "node obfuscateScan.mjs && eslint .",
+    "preview": "node obfuscateScan.mjs && vite preview",
+    "typecheck": "node obfuscateScan.mjs && tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
