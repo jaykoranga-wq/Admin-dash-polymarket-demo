@@ -22,6 +22,10 @@ export function MarketForm({ onClose }: MarketFormProps) {
 
   const [createMarket, { isLoading }] = useCreateMarketMutation();
 
+  const isResolutionTimeInvalid =
+    formData.resolutionTime !== '' &&
+    new Date(formData.resolutionTime).getTime() < Date.now() + 30 * 60 * 1000;
+
   const set = (field: keyof typeof formData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setFormData((prev) => ({ ...prev, [field]: e.target.value }));
@@ -129,9 +133,18 @@ export function MarketForm({ onClose }: MarketFormProps) {
                 value={formData.resolutionTime}
                 onChange={set('resolutionTime')}
                 min={new Date(Date.now() + 30 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:border-transparent ${
+                  isResolutionTimeInvalid
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
                 required
               />
+              {isResolutionTimeInvalid && (
+                <p className="mt-1.5 text-sm text-red-600">
+                  Must be at least 30 minutes in the future.
+                </p>
+              )}
             </div>
           </div>
 
@@ -174,7 +187,7 @@ export function MarketForm({ onClose }: MarketFormProps) {
           <div className="flex gap-3 pt-2 border-t border-gray-100">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isResolutionTimeInvalid}
               className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
               {isLoading ? 'Creating…' : 'Create Market'}
